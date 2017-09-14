@@ -1,20 +1,23 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+typedef vector<long double> VLD;
+typedef vector< VLD >  VVLD;
 
 // A[0] * B[0] + A[1] * B[1] ....
-double Scalar_Product(vector<double> A, vector<double> B)
+long double Scalar_Product(VLD A, VLD B)
 {
-    double res = 0 ;
+    long double res = 0 ;
     for(int i = 0 ; i < A.size(); i++)
     res += ( A[i] * B[i] );
     return res;
 }
 
 // [ A[0] * B[0] ; A[1] * B[1] .... ]
-vector<double> Element_Wise_Product(vector<double> A, vector<double> B)
+VLD Element_Wise_Product(VLD A, VLD B)
 {
-    vector<double> res;
+
+    VLD res;
 	for (int i = 0; i < A.size(); i++)
 	{
 		res.push_back(A[i]*B[i]);
@@ -22,7 +25,7 @@ vector<double> Element_Wise_Product(vector<double> A, vector<double> B)
 	return res;
 }
 
-void printMatrix( vector< vector<double> > mat)
+void Print_Matrix( VVLD  mat)
 {
     for(int i = 0 ; i <  mat.size(); i++)
     {
@@ -32,65 +35,111 @@ void printMatrix( vector< vector<double> > mat)
     }
     return;
 }
+
+//Print_vector it's a general method for printing vector
+// @Order determines if it's going to be printed forward(true) or backwards(false)
 template<typename Type>
-void printVector( vector<Type> vec)
+void Print_Vector( vector<Type> vec,bool order)
 {
-    for(int i = 0 ; i < vec.size(); i++)
-    cout<<vec[i]<<' ';
+    if(order)
+    {
+        for(int i = 0 ; i < vec.size(); i++)
+        {
+            if(i)cout<<' ';
+            cout<<vec[i];
+        }
+    }
+    else
+    {
+        for(int i = vec.size() - 1; i>=0 ; i--)
+        {
+            if(i == vec.size() - 1)cout<<vec[i];
+            else cout<<' '<<vec[i];
+        }
+    }
     cout<<'\n';
     return;
 }
 
-vector <double> Next_Gamma(vector< vector<double> >tranMat, vector<double> gamma, vector<double> obs)
+void  Print_Pair_Matrix(vector< vector< pair<long double, int> > > mat)
 {
-    vector<double> res;
+    cout<<"-----\n";
+    for(int i = 0 ; i < mat.size(); i++)
+    {
+        for(int j = 0 ; j < mat[i].size(); j++)
+        {
+            cout<<mat[i][j].first<<' '<<mat[i][j].second<<'\n';
+        }
+        cout<<"-----\n";
+    }
+}
+
+
+// Best_Index_Vector finds the value and the index of the maximun element in a VLD
+pair<long double, int> Best_Index_Vector(VLD vec)
+{
+    long double aux = -1e9;
+    int index = -1;
+    for(int j = 0 ; j < vec.size(); j++) 
+    {
+        if(aux < vec[j])
+        {
+            aux = vec[j];
+            index = j;
+        }
+    }
+    return make_pair(aux,index);
+    
+}
+
+
+vector < pair<long double, int> > Next_delta(VVLD tranMat, VLD delta, VLD obs)
+{
+    vector< pair<long double,int> >  res;
     for(int i = 0; i < tranMat.size(); i++)
     {
-        double maxi = -1e9;
+        VLD aux;
+        long double maxi = -1e9;
         for(int j = 0; j < tranMat[i].size(); j++)
-        maxi = max(maxi,tranMat[i][j] * gamma[i] * obs[i]);
-        res.push_back(maxi);
+        aux.push_back(tranMat[i][j] * delta[j] * obs[i]) ;
+        res.push_back( Best_Index_Vector (aux) );
     }
     return res;    
 }
 
 int main()
 {
-    //vector< vector<double> > tranMat;
-    vector< double > iniState;
+    //VVLD  tranMat;
+    vector< long double > iniState;
 
     //Input
     int h,w;
     cin>>h>>w;
-    vector< vector<double> > tranMat(w);
+    VVLD  tranMat(w);
     for(int i = 0 ; i < h; i++)
     {
         for(int j = 0 ; j < w; j++)
         {
-            double x;
+            long double x;
             cin>>x;
             tranMat[j].push_back(x);
         }
     }
-   // printMatrix(tranMat);
-
     cin>>h>>w;
-    vector< vector<double> > emiMat(w);
+    VVLD  emiMat(w);
     for(int i = 0 ; i < h; i++)
     {
         for(int j = 0 ; j < w; j++)
         {
-            double x;
+            long double x;
             cin>>x;
             emiMat[j].push_back(x);
         }
     }
-    //printMatrix(emiMat);
-
     cin>>h>>w;
     for(int i = 0 ; i < w; i++)
     {
-            double x;
+            long double x;
             cin>>x;
             iniState.push_back(x);
     }
@@ -105,28 +154,39 @@ int main()
     }
 	
 	// Initialization
-    vector< double > gamma = Element_Wise_Product(iniState, emiMat[obs[0]]);
+    vector< long double > delta = Element_Wise_Product(iniState, emiMat[obs[0]]);
     vector< int > bestPossible;
-	
-	//cout<<"first\n";
+    vector< vector< pair<long double, int> > > DeltaResults; 
+    // Delta procedure (Forward algorithm)
 	for (int i = 1; i < obs.size(); i++)
 	{
-       //cout<<i<<" "<<"loop\n";
-        gamma= Next_Gamma(tranMat, gamma, emiMat[obs[i]]);
-        double aux = -1e9;
-        int index = -1;
-        for(int j = 0 ; j < gamma.size(); j++) 
+        vector< pair<long double,int> > res = Next_delta(tranMat, delta, emiMat[obs[i]]);
+        for(int j = 0 ; j < res.size(); j++) delta[j] = res[j].first;
+        DeltaResults.push_back(res);
+    }
+    // Backtracking
+    double maxi = -1e9;
+    int index = -1;
+    // Finding the max of the last result
+    for(int i = 0; i < obs.size(); i++)
+    {   
+        long double aux =  DeltaResults[DeltaResults.size() -1 ][i].first;
+        if( aux > maxi)
         {
-            //aux = max(aux,gamma[j] );
-            if(aux < gamma[j])
-            {
-                aux = gamma[j];
-                index = j;
-            }
+            maxi = aux;
+            index = i;
         }
-        bestPossible.push_back(index);
-        
-	}
-	printVector(bestPossible);
+    }
+    vector<int>backtracking;
+    backtracking.push_back(index);
+    index = DeltaResults[DeltaResults.size() -1 ][index].second;
+    backtracking.push_back(index);
+    // Going back in the results
+    for(int i = DeltaResults.size() - 2; i>=0; i--)
+    {
+        backtracking.push_back(DeltaResults[i][index].second);
+        index = DeltaResults[i][index].second;
+    }
+    Print_Vector(backtracking,false);
     return 0;
 }
