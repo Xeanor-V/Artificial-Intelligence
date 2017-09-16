@@ -275,9 +275,10 @@ int main()
 		else
 			break;
 	}
-	cout<<"iters = "<<iters<<"\n";
+	// cout<<"iters = "<<iters<<"\n";
 	printMatrixOneLine(A);
 	printMatrixOneLine(B);
+	// cout<<"-DBL_MAX = "<<-DBL_MAX<<"\n";
 	
 	return 0;
 }
