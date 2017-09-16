@@ -1,4 +1,5 @@
 #include "Player.hpp"
+#include "HMM.hpp"
 #include <cstdlib>
 #include <iostream>
 
@@ -15,7 +16,6 @@ Action Player::shoot(const GameState &pState, const Deadline &pDue)
      * Here you should write your clever algorithms to get the best action.
      * This skeleton never shoots.
      */
-
     // This line choose not to shoot
     return cDontShoot;
 

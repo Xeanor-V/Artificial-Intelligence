@@ -18,7 +18,7 @@ void printMatrixOneLine( vector< vector<long double> > mat)
 	for(int i = 0 ; i <  mat.size(); i++)
 	{
 		for(int j = 0 ; j < mat[i].size(); j++)
-			cout<<mat[i][j]<<' ';
+			cout<<fixed<<setprecision(6)<<mat[i][j]<<' ';
 	}
 	cout<<'\n';
 	return;
@@ -114,13 +114,13 @@ int main()
 	
 	// cout<<"Initialization ok\n";
 	// cout<<"alpha[T-1][N-1] = "<<alpha[T-1][N-1]<<"\n";
+	//int z = 200;
 	while (true)
 	{
 	
 		// ========================================
 		// 2. The alpha-pass ======================
 		// ========================================
-
 		// compute alpha_0(i)
 		c[0] = 0;
 		for (i=0; i<N ; i++)
@@ -289,7 +289,7 @@ int main()
 		else
 			break;
 	}
-	cout<<"iters = "<<iters<<"\n";
+	//cout<<"iters = "<<iters<<"\n";
 	printMatrixOneLine(A);
 	printMatrixOneLine(B);
 	
