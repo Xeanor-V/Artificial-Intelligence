@@ -18,7 +18,7 @@ void printMatrixOneLine( vector< vector<long double> > mat)
 	for(int i = 0 ; i <  mat.size(); i++)
 	{
 		for(int j = 0 ; j < mat[i].size(); j++)
-			cout<<fixed<<setprecision(6)<<mat[i][j]<<' ';
+			cout<<mat[i][j]<<' ';
 	}
 	cout<<'\n';
 	return;
@@ -84,17 +84,13 @@ int main()
 	
 	cin>>w;
 	vector< int > obs(w);
-	//cout<<"w = "<<w<<"\n";
-	//printVectorInt(obs);
 	for(i = 0 ; i < w; i++)
 	{
 		int x;
 		cin>>x;
 		obs[i]=x;
 	}
-	//printVectorInt(obs);
-	
-	// cout<<"Reading ok\n";
+	// printVectorInt(obs);
 	
 	// 0. Variables ===========================
 	int T = obs.size();
@@ -106,23 +102,20 @@ int main()
 	vector< vector<long double> > gamma2D(T, vector<long double>(N)); // dim = (T,N)
 	vector< vector< vector<long double> > > gamma3D(T, vector< vector<long double> >(N, vector<long double>(N))); // dim = (T,N,N)
 	
-	// cout<<"Variables ok\n";
 	// 1. Initialization ======================
 	int maxIters = 500;
 	int iters = 0;
 	long double oldLogProb = -DBL_MAX;
 	
-	// cout<<"Initialization ok\n";
-	// cout<<"alpha[T-1][N-1] = "<<alpha[T-1][N-1]<<"\n";
-	//int z = 200;
 	while (true)
 	{
 	
 		// ========================================
 		// 2. The alpha-pass ======================
 		// ========================================
+
 		// compute alpha_0(i)
-		c[0] = 0;
+		c[0] = 0.0;
 		for (i=0; i<N ; i++)
 		{
 			alpha[0][i] = pi[i] * B[i][obs[0]];
@@ -136,7 +129,6 @@ int main()
 			alpha[0][i] = c[0] * alpha[0][i];
 		}
 		
-		// cout<<"foobar ok\n";
 		// compute alpha_t(i)
 		for (t=1; t<T ; t++)
 		{
@@ -146,20 +138,19 @@ int main()
 				alpha[t][i] = 0.0;
 				for (j=0; j<N; j++)
 				{
-					alpha[t][i] += alpha[t-1][j]*A[j][i];
+					alpha[t][i] += alpha[t-1][j] * A[j][i];
 				}
 				alpha[t][i] = alpha[t][i] * B[i][obs[t]];
-				c[t] = c[t] + alpha[t][i];
+				c[t] += alpha[t][i];
 			}
 			// scale alpha_t(i)
 			c[t] = 1.0/c[t];
 			for (i=0; i<N ; i++)
 			{
-				alpha[t][i] = c[t]*alpha[t][i];
+				alpha[t][i] = c[t] * alpha[t][i];
 			}
 		}
-		// printVector(c);
-		// cout<<"Alpha pass ok\n";
+
 		// ========================================
 		// 3. The beta-pass =======================
 		// ========================================
@@ -185,10 +176,6 @@ int main()
 			}
 		}
 		
-		// printVector(beta[0]);
-		// printVector(beta[T-1]);
-		//printMatrix(beta);
-		// cout<<"Beta pass ok\n";
 		// ===============================================================
 		// 4. Compute gamma_t(i, j) and gamma_t(i) =======================
 		// ===============================================================
@@ -224,7 +211,6 @@ int main()
 			gamma2D[T-1][i] = alpha[T-1][i] / denom;
 		}
 		
-		// cout<<"Gamma computations ok\n";
 		// ==================================================
 		// 5. Re-estimate A, B and pi =======================
 		// ==================================================
@@ -284,14 +270,15 @@ int main()
 		// 7. To iterate or not to iterate, that is the question... ======
 		// ===============================================================
 		iters++;
-		if (iters<maxIters && logProb > oldLogProb)
+		if (iters < maxIters && logProb > oldLogProb)
 			oldLogProb = logProb;
 		else
 			break;
 	}
-	//cout<<"iters = "<<iters<<"\n";
+	// cout<<"iters = "<<iters<<"\n";
 	printMatrixOneLine(A);
 	printMatrixOneLine(B);
+	// cout<<"-DBL_MAX = "<<-DBL_MAX<<"\n";
 	
 	return 0;
 }
