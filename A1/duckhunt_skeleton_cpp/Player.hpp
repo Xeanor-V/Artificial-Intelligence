@@ -68,6 +68,9 @@ public:
      * @param pDue time before which we must have returned
      */
     void reveal(const GameState &pState, const std::vector<ESpecies> &pSpecies, const Deadline &pDue);
+
+private:
+    int NoStates = 5;
 };
 
 } /*namespace ducks*/

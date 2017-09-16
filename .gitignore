@@ -1,2 +1,6 @@
 *.out
 *.in
+*.ghc
+*.gch
+A1/duckhunt_skeleton_cpp/Skeleton
+A1/duckhunt_skeleton_cpp/player2server

@@ -2,9 +2,56 @@
 
 namespace ducks
 {
-    HMM::HMM()
-    {
 
+
+    HMM::HMM(int tranMatH,int tranMatW,int emiMatH,int emiMatW, int iniStateN):
+    tranMat(tranMatH), emiMat(emiMatH), iniState()
+    {
+        srand(time(NULL));
+        double coef;
+        for(int i = 0 ; i < tranMatH; i++)
+        {
+            coef = 0;
+            for(int j = 0 ; j < tranMatW; j++)
+            {
+                double x = rand();
+                tranMat[i].push_back(x);
+                coef+=x;
+            }
+            coef = 1/coef;
+            for(int j = 0 ; j < tranMat[i].size(); j++) tranMat[i][j] *= coef;
+        }
+
+        for(int i = 0 ; i < emiMatH; i++)
+        {
+            coef = 0;
+            for(int j = 0 ; j < emiMatW; j++)
+            {
+                double x = rand();
+                emiMat[i].push_back(x);
+                coef+=x;
+            }
+            coef = 1/coef;
+            for(int j = 0 ; j < tranMat[i].size(); j++) emiMat[i][j] *= coef;
+        }
+
+
+        coef = 0;
+        for(int i = 0 ; i < iniStateN; i++)
+        {
+            double x = rand();
+            iniState.push_back(x);
+            coef+=x;
+        }
+        coef = 1/coef;
+        for(int i = 0 ; i < iniStateN; i++) iniState[i] *= coef;
+    }    
+    HMM::HMM(VVLD tranMat, VVLD emiMat, VLD iniState, VI obs)
+    {
+        this -> tranMat = tranMat;
+        this -> emiMat = emiMat;
+        this -> iniState = iniState;
+        this -> obs = obs;
     }
     long double HMM::Scalar_Product(VLD A, VLD B)
     {
@@ -13,7 +60,7 @@ namespace ducks
         res += ( A[i] * B[i] );
         return res;
     }
-    VLD HMM::Next_Emmision(VVLD tranMat,VVLD emiMat,VLD iniState)
+    VLD HMM::Next_Emmision()
     {
         VLD res1,res2;  
         for(int i = 0 ; i < tranMat.size(); i++ )
@@ -35,7 +82,7 @@ namespace ducks
         }
         return res;
     }
-    long double HMM::Prob_Emmision_Sequence(VVLD tranMat,VVLD emiMat,VLD iniState,VI obs)
+    long double HMM::Prob_Emmision_Sequence()
     {
         // Initialization
         VLD alpha = this->HMM::Element_Wise_Product(iniState, emiMat[obs[0]]);
@@ -59,7 +106,7 @@ namespace ducks
         return res;
     }
     pair<long double, int> HMM::Best_Index_Vector(VLD vec)
-    {
+    {   
         long double aux = -1e9;
         int index = -1;
         for(int j = 0 ; j < vec.size(); j++) 
@@ -72,7 +119,7 @@ namespace ducks
         }
         return make_pair(aux,index);
     }
-    DeltaTable HMM::Estimate_Sequence_Of_States(VVLD tranMat,VVLD emiMat,VLD iniState,VI obs)
+    DeltaTable HMM::Estimate_Sequence_Of_States()
     {
         VLD delta = this->HMM::Element_Wise_Product(iniState, emiMat[obs[0]]);
         vector< int > bestPossible;
@@ -121,7 +168,7 @@ namespace ducks
         }
         return backtracking;
     }
-    pair<VVLD,VVLD> HMM::Estimate_Model(VVLD tranMat,VVLD emiMat,VLD iniState,VI obs)
+    void HMM::Estimate_Model()
     {
         int i,j,t;
         int T = obs.size();
@@ -133,14 +180,14 @@ namespace ducks
         VVLD gamma2D(T, VLD(N)); // dim = (T,N)
         vector< VVLD > gamma3D(T, VVLD(N, VLD(N))); // dim = (T,N,N)
         
-        // cout<<"Variables ok\n";
+        // cerr<<"Variables ok\n";
         // 1. Initialization ======================
         int maxIters = 500;
         int iters = 0;
         long double oldLogProb = -DBL_MAX;
         
-        // cout<<"Initialization ok\n";
-        // cout<<"alpha[T-1][N-1] = "<<alpha[T-1][N-1]<<"\n";
+        // cerr<<"Initialization ok\n";
+        // cerr<<"alpha[T-1][N-1] = "<<alpha[T-1][N-1]<<"\n";
         //int z = 200;
         while (true)
         {
@@ -163,7 +210,7 @@ namespace ducks
                 alpha[0][i] = c[0] * alpha[0][i];
             }
             
-            // cout<<"foobar ok\n";
+            // cerr<<"foobar ok\n";
             // compute alpha_t(i)
             for (t=1; t<T ; t++)
             {
@@ -185,7 +232,7 @@ namespace ducks
                     alpha[t][i] = c[t]*alpha[t][i];
                 }
             }
-            // cout<<"Alpha pass ok\n";
+            // cerr<<"Alpha pass ok\n";
             // ========================================
             // 3. The beta-pass =======================
             // ========================================
@@ -210,7 +257,7 @@ namespace ducks
                     beta[t][i] = c[t] * beta[t][i];
                 }
             }
-            // cout<<"Beta pass ok\n";
+            // cerr<<"Beta pass ok\n";
             // ===============================================================
             // 4. Compute gamma_t(i, j) and gamma_t(i) =======================
             // ===============================================================
@@ -246,7 +293,7 @@ namespace ducks
                 gamma2D[T-1][i] = alpha[T-1][i] / denom;
             }
             
-            // cout<<"Gamma computations ok\n";
+            // cerr<<"Gamma computations ok\n";
             // ==================================================
             // 5. Re-estimate tranMat, emiMat and iniState =======================
             // ==================================================
@@ -311,12 +358,40 @@ namespace ducks
             else
                 break;
         }
-        return make_pair(tranMat,emiMat);
+        this -> HMM::iniState = iniState;
+        this -> HMM::tranMat = tranMat;
+        this -> HMM::emiMat = emiMat;
+        //return make_pair(iniState, make_pair(tranMat,emiMat));
+    }
+    void HMM::Print_HMM()
+    {
+        cerr<<"Transition matrix: \n";
+        for(int i = 0 ; i < tranMat.size(); i++)
+        {
+            for(int j = 0 ; j < tranMat[i].size();j++)
+            cerr<<tranMat[i][j]<<' ';
+            cerr<<'\n';
+        }
+        cerr<<"Emision Matrix: \n";
+        for(int i = 0 ; i < emiMat.size(); i++)
+        {
+            for(int j = 0 ; j < emiMat[i].size();j++)
+            cerr<<emiMat[i][j]<<' ';
+            cerr<<'\n';
+        }
+        cerr<<"Initial state probability: \n";
+        for(int i = 0 ; i < iniState.size(); i++)
+        {
+            cerr<<iniState[i]<<' ';
+        }
+        cerr<<'\n';
     }
 }
 /*
 int main()
 {
+    /*
+    ducks::HMM hmm;
     ducks::HMM hmm;
     VLD iniState;
     
@@ -364,8 +439,10 @@ int main()
                 cin>>x;
                 obs.push_back(x);
         }
-        cout<<hmm.Prob_Emmision_Sequence(tranMat,emiMat,iniState,obs)<<endl;
-    //cout<<"It's ok"<<endl;
-}
+        cerr<<hmm.Prob_Emmision_Sequence(tranMat,emiMat,iniState,obs)<<endl;
+    //cerr<<"It's ok"<<endl;
 
+    ducks::HMM hmm(4,4,4,4,4);
+    hmm.Print_HMM();
+}
 */
