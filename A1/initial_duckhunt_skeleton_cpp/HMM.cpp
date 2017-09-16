@@ -390,7 +390,7 @@ namespace ducks
 /*
 int main()
 {
-    /*
+    
     ducks::HMM hmm;
     ducks::HMM hmm;
     VLD iniState;

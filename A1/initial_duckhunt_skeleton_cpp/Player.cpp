@@ -33,7 +33,7 @@ std::vector<ESpecies> Player::guess(const GameState &pState, const Deadline &pDu
     {
         Bird bird = pState.getBird(i);
         vector<int> observation;
-        for(int j = 0 ; j < bird.getSeqLength(); j++)
+		for(int j = 0 ; j < bird.getSeqLength(); j++)
         {
             switch (bird.getObservation(j))
             {
@@ -72,10 +72,11 @@ std::vector<ESpecies> Player::guess(const GameState &pState, const Deadline &pDu
                 break;
             }
         }
-        int NoStates = this -> Player::NoStates;
+		int NoStates = 5;//this -> Player::NoStates;
         HMM hmm(NoStates,NoStates,NoStates,10,10);
         cerr<<"BIRD NO."<<i<<": \n";
         hmm.Print_HMM();
+	
     }
     std::vector<ESpecies> lGuesses(pState.getNumBirds(), SPECIES_UNKNOWN);
     return lGuesses;
