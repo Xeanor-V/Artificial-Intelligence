@@ -427,7 +427,7 @@ namespace ducks
         {
             avgState = this -> HMM::Vector_Sum(avgState, hmms[i].iniState);
         }
-        avgState = this -> HMM::Matrix_Division(avgState,(double) hmms.size());
+        avgState = this -> HMM::Vector_Division(avgState,(double) hmms.size());
         vector<int> auxObs;
         HMM aux(avgTran,avgEmi,avgState,auxObs);
         return aux;

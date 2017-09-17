@@ -28,9 +28,9 @@ namespace ducks
             void Print_HMM();
             HMM Avg_HMM(vector<HMM> hmms);
             VVLD Matrix_Sum(VVLD A, VVLD B);
+            VVLD Matrix_Division(VVLD A, double B);
             VLD Vector_Sum(VLD A, VLD B);
             VLD Vector_Division(VLD A, double B);
-            VLD Matrix_Division(VVLD A, double B);
             VVLD tranMat, emiMat;
             VLD iniState;
             VI obs;
