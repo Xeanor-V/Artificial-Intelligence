@@ -26,7 +26,7 @@ namespace ducks
             void Estimate_Model();
             //Help methods
             void Print_HMM();
-            HMM Avg_HMM(vector<HMM> hmms);
+            HMM Avg_HMM(vector<HMM> hmms, HMM previous, double denom);
             VVLD Matrix_Sum(VVLD A, VVLD B);
             VVLD Matrix_Division(VVLD A, double B);
             VLD Vector_Sum(VLD A, VLD B);

@@ -1,5 +1,4 @@
 #include "Player.hpp"
-#include "HMM.hpp"
 #include <cstdlib>
 #include <iostream>
 
@@ -80,8 +79,53 @@ std::vector<ESpecies> Player::guess(const GameState &pState, const Deadline &pDu
         //hmm.Print_HMM();
         playerModels.push_back(hmm);
     }
-    std::vector<ESpecies> lGuesses(pState.getNumBirds(), SPECIES_UNKNOWN);
-    return lGuesses;
+
+    if(pState.getRound() != 0)
+    {
+        std::vector<ESpecies> lGuesses(pState.getNumBirds());
+        for(int i = 0 ; i < pState.getNumBirds(); i++)
+        {
+            long double maxi = -1e9;
+            int index = 0;
+            for(int j = 0; j < 6; j++)
+            {
+                //maxi = max(maxi, HMMAvg[j].Prob_Emmision_Sequence() );
+                long double PEM = HMMAvg[j].first.Prob_Emmision_Sequence();
+                if(maxi <  PEM)
+                {
+                    maxi =  PEM;
+                    index = j;
+                }
+            }
+            switch(index)
+            {
+                case 0:
+                lGuesses[i] = SPECIES_PIGEON;
+                break;
+                case 1:
+                lGuesses[i] = SPECIES_RAVEN;
+                break;
+                case 2:
+                lGuesses[i] = SPECIES_SKYLARK;
+                break;
+                case 3:
+                lGuesses[i] = SPECIES_SWALLOW;
+                break;
+                case 4:
+                lGuesses[i] =  SPECIES_SNIPE;
+                break;
+                case 5:
+                lGuesses[i] = SPECIES_BLACK_STORK;
+                break;
+            }
+        }
+        return lGuesses;
+    }
+    else
+    {
+        std::vector<ESpecies> lGuesses(pState.getNumBirds(), SPECIES_UNKNOWN);
+        return lGuesses;
+    }
 }
 
 void Player::hit(const GameState &pState, int pBird, const Deadline &pDue)
@@ -124,7 +168,31 @@ void Player::reveal(const GameState &pState, const std::vector<ESpecies> &pSpeci
             break;
         }
     }
-
+    if(pState.getRound() == 0)
+    {
+        for(int i = 0; i < 6 ; i++)
+        {
+            if(bucketBirds[i].size() > 0)
+            {
+                vector <int> dummyObs;
+                HMM dummy(bucketBirds[i][0].tranMat.size(),bucketBirds[i][0].iniState.size(),dummyObs);
+                HMM avgHMM = bucketBirds[i][0].Avg_HMM(bucketBirds[i],dummy,abs(DBL_MIN));
+                HMMAvg.push_back( make_pair(avgHMM,bucketBirds[i].size()));
+            }
+        }
+    }
+    else
+    {
+        for(int i = 0; i < 6 ; i++)
+        {
+            if(bucketBirds[i].size() > 0)
+            {
+                HMM avgHMM = bucketBirds[i][0].Avg_HMM(bucketBirds[i],HMMAvg[i].first, HMMAvg[i].second);
+                HMMAvg[i].first = avgHMM;
+                HMMAvg[i].second = HMMAvg[i].second + bucketBirds[i].size();
+            }
+        }
+    }
 }
 
 
