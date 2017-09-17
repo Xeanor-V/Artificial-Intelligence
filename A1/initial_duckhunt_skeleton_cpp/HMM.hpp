@@ -10,7 +10,7 @@ namespace ducks
     class HMM
     {
         public:
-            HMM(int tranMatH,int tranMatW,int emiMatH,int emiMatW, int iniStateN);
+            HMM(int numState,int numEmi,VI obs);
             HMM(VVLD tranMat, VVLD emiMat, VLD iniState, VI obs);
             // HMM0
             VLD Next_Emmision();
@@ -26,7 +26,11 @@ namespace ducks
             void Estimate_Model();
             //Help methods
             void Print_HMM();
-        private:
+            HMM Avg_HMM(vector<HMM> hmms);
+            VVLD Matrix_Sum(VVLD A, VVLD B);
+            VLD Vector_Sum(VLD A, VLD B);
+            VLD Vector_Division(VLD A, double B);
+            VLD Matrix_Division(VVLD A, double B);
             VVLD tranMat, emiMat;
             VLD iniState;
             VI obs;

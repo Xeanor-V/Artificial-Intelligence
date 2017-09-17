@@ -29,6 +29,7 @@ std::vector<ESpecies> Player::guess(const GameState &pState, const Deadline &pDu
      * Here you should write your clever algorithms to guess the species of each bird.
      * This skeleton makes no guesses, better safe than sorry!
      */
+    playerModels.clear();
     for(int i = 0 ; i < pState.getNumBirds(); i++)
     {
         Bird bird = pState.getBird(i);
@@ -73,10 +74,11 @@ std::vector<ESpecies> Player::guess(const GameState &pState, const Deadline &pDu
             }
         }
 		int NoStates = 5;//this -> Player::NoStates;
-        HMM hmm(NoStates,NoStates,NoStates,10,10);
-        cerr<<"BIRD NO."<<i<<": \n";
-        hmm.Print_HMM();
-	
+        HMM hmm(NoStates,10,observation);
+        hmm.Estimate_Model();
+        //cerr<<"BIRD NO."<<i<<": \n";
+        //hmm.Print_HMM();
+        playerModels.push_back(hmm);
     }
     std::vector<ESpecies> lGuesses(pState.getNumBirds(), SPECIES_UNKNOWN);
     return lGuesses;
@@ -95,6 +97,34 @@ void Player::reveal(const GameState &pState, const std::vector<ESpecies> &pSpeci
     /*
      * If you made any guesses, you will find out the true species of those birds in this function.
      */
+    vector< vector<HMM> > bucketBirds(6);
+    for(int i = 0; i < pSpecies.size(); i++)
+    {
+        switch(pSpecies[i])
+        {
+            case SPECIES_UNKNOWN:
+            break;    ///< the species is unknown
+            case SPECIES_PIGEON:
+            bucketBirds[0].push_back(this -> playerModels[i]);
+            break;
+            case SPECIES_RAVEN:
+            bucketBirds[1].push_back(this -> playerModels[i]);
+            break;
+            case SPECIES_SKYLARK:
+            bucketBirds[2].push_back(this -> playerModels[i]);
+            break;
+            case SPECIES_SWALLOW:
+            bucketBirds[3].push_back(this -> playerModels[i]);
+            break;
+            case SPECIES_SNIPE:
+            bucketBirds[4].push_back(this -> playerModels[i]);
+            break;
+            case SPECIES_BLACK_STORK:
+            bucketBirds[5].push_back(this -> playerModels[i]);
+            break;
+        }
+    }
+
 }
 
 

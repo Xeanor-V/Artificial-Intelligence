@@ -5,6 +5,7 @@
 #include "GameState.hpp"
 #include "Action.hpp"
 #include <vector>
+#include "HMM.hpp"
 
 namespace ducks
 {
@@ -17,7 +18,8 @@ public:
      * There is no data in the beginning, so not much should be done here.
      */
     Player();
-
+    vector <HMM> playerModels;
+    vector < pair<HMM,int> > HMMAvg;
     /**
      * Shoot!
      *

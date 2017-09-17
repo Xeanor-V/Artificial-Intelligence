@@ -2,17 +2,15 @@
 
 namespace ducks
 {
-
-
-    HMM::HMM(int tranMatH,int tranMatW,int emiMatH,int emiMatW, int iniStateN):
-    tranMat(tranMatH), emiMat(emiMatH), iniState()
+    HMM::HMM(int numState,int numEmi,VI obs):
+    tranMat(numState), emiMat(numState), iniState()
     {
         srand(time(NULL));
         double coef;
-        for(int i = 0 ; i < tranMatH; i++)
+        for(int i = 0 ; i < numState; i++)
         {
             coef = 0;
-            for(int j = 0 ; j < tranMatW; j++)
+            for(int j = 0 ; j < numState; j++)
             {
                 double x = rand();
                 tranMat[i].push_back(x);
@@ -22,10 +20,10 @@ namespace ducks
             for(int j = 0 ; j < tranMat[i].size(); j++) tranMat[i][j] *= coef;
         }
 
-        for(int i = 0 ; i < emiMatH; i++)
+        for(int i = 0 ; i < numState; i++)
         {
             coef = 0;
-            for(int j = 0 ; j < emiMatW; j++)
+            for(int j = 0 ; j < numEmi; j++)
             {
                 double x = rand();
                 emiMat[i].push_back(x);
@@ -37,14 +35,16 @@ namespace ducks
 
 
         coef = 0;
-        for(int i = 0 ; i < iniStateN; i++)
+        for(int i = 0 ; i < numEmi; i++)
         {
             double x = rand();
             iniState.push_back(x);
             coef+=x;
         }
         coef = 1/coef;
-        for(int i = 0 ; i < iniStateN; i++) iniState[i] *= coef;
+        for(int i = 0 ; i < numEmi; i++) iniState[i] *= coef;
+
+        this -> obs = obs;
     }    
     HMM::HMM(VVLD tranMat, VVLD emiMat, VLD iniState, VI obs)
     {
@@ -59,6 +59,28 @@ namespace ducks
         for(int i = 0 ; i < A.size(); i++)
         res += ( A[i] * B[i] );
         return res;
+    }
+    VVLD HMM::Matrix_Sum(VVLD A, VVLD B)
+    {
+        for(int i = 0 ; i < A.size(); i++)
+            for(int j = 0 ; j < A[i].size(); j++) A[i][j] += B[i][j];
+        return A;
+    }
+    VVLD HMM::Matrix_Division(VVLD A, double B)
+    {
+        for(int i = 0 ; i < A.size(); i++)
+            for(int j = 0 ; j < A[i].size(); j++) A[i][j] /= B;
+        return A;
+    }
+    VLD HMM::Vector_Sum(VLD A, VLD B)
+    {
+        for(int i = 0; i < A.size(); i++) A[i] += B[i];
+        return A;
+    }
+    VLD HMM::Vector_Division(VLD A, double B)
+    {
+        for(int i = 0; i < A.size(); i++) A[i] /= B;
+        return A;
     }
     VLD HMM::Next_Emmision()
     {
@@ -386,63 +408,31 @@ namespace ducks
         }
         cerr<<'\n';
     }
-}
-/*
-int main()
-{
-    
-    ducks::HMM hmm;
-    ducks::HMM hmm;
-    VLD iniState;
-    
-        //Input
-        int h,w;
-        cin>>h>>w;
-        VVLD tranMat(w);
-        for(int i = 0 ; i < h; i++)
+    HMM HMM::Avg_HMM(vector<HMM> hmms)
+    {
+        VVLD avgTran = hmms[0].tranMat;
+        for(int i = 1; i < hmms.size(); i++)
         {
-            for(int j = 0 ; j < w; j++)
-            {
-                double x;
-                cin>>x;
-                tranMat[j].push_back(x);
-            }
+            avgTran = this -> HMM::Matrix_Sum(avgTran,hmms[i].tranMat);
         }
-       // printMatrix(tranMat);
-    
-        cin>>h>>w;
-        VVLD emiMat(w);
-        for(int i = 0 ; i < h; i++)
+        avgTran = this -> HMM::Matrix_Division(avgTran,(double) hmms.size());
+        VVLD avgEmi = hmms[0].emiMat;
+        for(int i = 1; i < hmms.size(); i++)
         {
-            for(int j = 0 ; j < w; j++)
-            {
-                double x;
-                cin>>x;
-                emiMat[j].push_back(x);
-            }
+            avgEmi = this -> HMM::Matrix_Sum(avgEmi, hmms[i].emiMat);
         }
-        //printMatrix(emiMat);
-    
-        cin>>h>>w;
-        for(int i = 0 ; i < w; i++)
+        avgEmi = this -> HMM::Matrix_Division(avgEmi,(double) hmms.size());
+        VLD avgState;
+        for(int i = 0; i < hmms.size(); i++)
         {
-                double x;
-                cin>>x;
-                iniState.push_back(x);
+            avgState = this -> HMM::Vector_Sum(avgState, hmms[i].iniState);
         }
-        
-        vector< int > obs;
-        cin>>w;
-        for(int i = 0 ; i < w; i++)
-        {
-                int x;
-                cin>>x;
-                obs.push_back(x);
-        }
-        cerr<<hmm.Prob_Emmision_Sequence(tranMat,emiMat,iniState,obs)<<endl;
-    //cerr<<"It's ok"<<endl;
+        avgState = this -> HMM::Matrix_Division(avgState,(double) hmms.size());
+        vector<int> auxObs;
+        HMM aux(avgTran,avgEmi,avgState,auxObs);
+        return aux;
+    }
 
-    ducks::HMM hmm(4,4,4,4,4);
-    hmm.Print_HMM();
 }
-*/
+
+

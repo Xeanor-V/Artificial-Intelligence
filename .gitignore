@@ -4,3 +4,6 @@
 *.gch
 A1/duckhunt_skeleton_cpp/Skeleton
 A1/duckhunt_skeleton_cpp/player2server
+A1/initial_duckhunt_skeleton_cpp/Skeleton
+A1/initial_duckhunt_skeleton_cpp/duckhunt
+A1/initial_duckhunt_skeleton_cpp/server2player
