@@ -20,7 +20,8 @@ public:
     Player();
     vector <HMM> playerModels;
     vector < pair<HMM,int> > HMMAvg;
-	int NoStates = 5;
+	int NoStates = 1;
+	long double threshold = -1e1;
     /**
      * Shoot!
      *
