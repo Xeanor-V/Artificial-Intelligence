@@ -20,6 +20,7 @@ public:
     Player();
     vector <HMM> playerModels;
     vector < pair<HMM,int> > HMMAvg;
+	int NoStates = 5;
     /**
      * Shoot!
      *

@@ -255,6 +255,13 @@ int main()
 				B[i][j] = numer/denom;
 			}
 		}
+		cout<<"iters = "<<iters<<"\n";
+		cout<<"A = \n";
+		printMatrix(A);
+		cout<<"B = \n";
+		printMatrix(B);
+		cout<<"pi = \n";
+		printVector(pi);
 		
 		// ======================================================
 		// 6. Compute log[P (O | lambda)] =======================

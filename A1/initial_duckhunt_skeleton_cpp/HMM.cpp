@@ -17,7 +17,7 @@ namespace ducks
                 coef+=x;
             }
             coef = 1/coef;
-            for(int j = 0 ; j < tranMat[i].size(); j++) tranMat[i][j] *= coef;
+            for(int j = 0 ; j < numState; j++) tranMat[i][j] *= coef;
         }
 
         for(int i = 0 ; i < numState; i++)
@@ -30,19 +30,19 @@ namespace ducks
                 coef+=x;
             }
             coef = 1/coef;
-            for(int j = 0 ; j < tranMat[i].size(); j++) emiMat[i][j] *= coef;
+            for(int j = 0 ; j < numEmi; j++) emiMat[i][j] *= coef;
         }
 
 
         coef = 0;
-        for(int i = 0 ; i < numEmi; i++)
+        for(int i = 0 ; i < numState; i++)
         {
             double x = rand();
             iniState.push_back(x);
             coef+=x;
         }
         coef = 1/coef;
-        for(int i = 0 ; i < numEmi; i++) iniState[i] *= coef;
+        for(int i = 0 ; i < numState; i++) iniState[i] *= coef;
 
         this -> obs = obs;
     }    
@@ -104,20 +104,37 @@ namespace ducks
         }
         return res;
     }
-    long double HMM::Prob_Emmision_Sequence()
+    long double HMM::Prob_Emmision_Sequence(VI obs)
     {
         // Initialization
-        VLD alpha = this->HMM::Element_Wise_Product(iniState, emiMat[obs[0]]);
+        VLD alpha = iniState;
+		/*
+		this -> Print_HMM();
+        cerr<<"Observations: \n";
+        for(int i = 0 ; i < obs.size(); i++)
+        {
+            cerr<<obs[i]<<' ';
+        }
+        cerr<<'\n';
+		*/
+		
+		for (int i = 0; i < iniState.size(); i++)
+		{
+			alpha[i] *= emiMat[i][obs[0]];
+		}
         for (int i = 1; i < obs.size(); i++)
         {
             //alpha = this->HMM::Next_Alpha(tranMat, alpha, emiMat[obs[i]]);
-            VLD b = emiMat[obs[i]];
-            VLD res1,res2;  
+            VLD res1(tranMat.size());
+			VLD res2(tranMat.size());  
             for(int j = 0 ; j < tranMat.size(); j++ )
             {
-                res1.push_back(this->HMM::Scalar_Product(tranMat[j],alpha));
+				res1[j] = 0;
+				for (int k = 0; k < tranMat.size(); k++)
+					res1[j] += alpha[k] * tranMat[k][j];
             }
-            res2 = this->HMM::Element_Wise_Product(res1, b);
+			for (int j = 0; j < iniState.size(); j++)
+				res2[j] = emiMat[j][obs[i]] * res1[j];
             alpha = res2;
         }
         long double res = 0;
@@ -213,7 +230,6 @@ namespace ducks
         //int z = 200;
         while (true)
         {
-        
             // ========================================
             // 2. The alpha-pass ======================
             // ========================================
@@ -407,30 +423,38 @@ namespace ducks
             cerr<<iniState[i]<<' ';
         }
         cerr<<'\n';
+		/*
+        cerr<<"Observations: \n";
+        for(int i = 0 ; i < obs.size(); i++)
+        {
+            cerr<<obs[i]<<' ';
+        }
+        cerr<<'\n';
+		*/
     }
-    HMM HMM::Avg_HMM(vector<HMM> hmms, HMM previous, double denom)
+    HMM HMM::Avg_HMM(vector<HMM> hmms, HMM previous, double weight)
     {
         VVLD avgTran = hmms[0].tranMat;
         for(int i = 1; i < hmms.size(); i++)
         {
             avgTran = this -> HMM::Matrix_Sum(avgTran,hmms[i].tranMat);
         }
-        avgTran = this -> HMM::Matrix_Sum( this -> HMM::Matrix_Division(previous.tranMat,1/denom),avgTran);
-        avgTran = this -> HMM::Matrix_Division(avgTran,denom + hmms.size());
+        avgTran = this -> HMM::Matrix_Sum( this -> HMM::Matrix_Division(previous.tranMat,1/weight),avgTran);
+        avgTran = this -> HMM::Matrix_Division(avgTran,weight + hmms.size());
         VVLD avgEmi = hmms[0].emiMat;
         for(int i = 1; i < hmms.size(); i++)
         {
             avgEmi = this -> HMM::Matrix_Sum(avgEmi, hmms[i].emiMat);
         }
-        avgEmi = this -> HMM::Matrix_Sum( this-> HMM::Matrix_Division(previous.emiMat,1/denom),avgEmi);
-        avgEmi = this -> HMM::Matrix_Division(avgEmi,denom + hmms.size());
-        VLD avgState;
-        for(int i = 0; i < hmms.size(); i++)
+        avgEmi = this -> HMM::Matrix_Sum( this-> HMM::Matrix_Division(previous.emiMat,1/weight),avgEmi);
+        avgEmi = this -> HMM::Matrix_Division(avgEmi,weight + hmms.size());
+        VLD avgState = hmms[0].iniState;
+        for(int i = 1; i < hmms.size(); i++)
         {
             avgState = this -> HMM::Vector_Sum(avgState, hmms[i].iniState);
         }
-        avgState = this -> HMM::Vector_Sum( this-> HMM::Vector_Division(previous.iniState, 1/denom), avgState);
-        avgState = this -> HMM::Vector_Division(avgState,denom + hmms.size());
+        avgState = this -> HMM::Vector_Sum( this-> HMM::Vector_Division(previous.iniState, 1/weight), avgState);
+        avgState = this -> HMM::Vector_Division(avgState,weight + hmms.size());
         vector<int> auxObs;
         HMM aux(avgTran,avgEmi,avgState,auxObs);
         return aux;
