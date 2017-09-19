@@ -21,8 +21,12 @@ public:
     vector <HMM> playerModels;
     vector < pair<HMM,int> > HMMAvg;
 	// Parameters we can play with :
-	int NoStates = 1;
-	long double threshold = -1e1; // Threshold is useless
+	int NoStatesG = 1; // For the guessing models
+	int NoStatesS = 5; // For the shooting models
+	int maxitersG = 500;
+	int maxitersS = 100;
+	long double thresholdGuess = -1e1; // Threshold is useless
+	long double thresholdBS = 0.8; // Threshold on the proba of BS from which we don't shoot anymore
 	int startShoot = 110; // The dumb shooting method is actually bad
     /**
      * Shoot!

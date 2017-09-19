@@ -21,18 +21,18 @@ namespace ducks
             // HMM2
             pair<long double, int> Best_Index_Vector(VLD vec);
             DeltaTable Estimate_Sequence_Of_States();
-            VI Backtracking(DeltaTable deltaR);
+            VI Backtracking(DeltaTable deltaResults);
             // HMM4
-            void Estimate_Model();
+            void Estimate_Model(int maxIters);
             //Help methods
             void Print_HMM();
+			//void Print_DeltaTable(DeltaTable tab);
             HMM Avg_HMM(vector<HMM> hmms, HMM previous, double weight);
             VVLD Matrix_Sum(VVLD A, VVLD B);
             VVLD Matrix_Division(VVLD A, double B);
             VLD Vector_Sum(VLD A, VLD B);
             VLD Vector_Division(VLD A, double B);
             VVLD tranMat, emiMat;
-			VVLD tranMatT, emiMatT;
             VLD iniState;
             VI obs;
     };
