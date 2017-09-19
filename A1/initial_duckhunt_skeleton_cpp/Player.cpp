@@ -12,22 +12,28 @@ namespace ducks
 
 	Action Player::shoot(const GameState &pState, const Deadline &pDue)
 	{
-		/*
-		* Here you should write your clever algorithms to get the best action.
-		* This skeleton never shoots.
-		*/
-		// This line choose not to shoot
+		// A dumb shooting method that predicts that the bird does the same move as the previous one
+		// Actually it gives a worse result than just guessing, so it's useless
+		if (pState.getBird(0).getSeqLength() >= this->startShoot)
+		{
+			for(int i = 0 ; i < pState.getNumBirds(); i++)
+			{
+				Bird bird = pState.getBird(i);
+				if (bird.isAlive())
+				{
+					// shoot
+					EMovement previousMove = bird.getLastObservation();
+					cerr<<"SHOOT on bird "<<i<<" at move "<<previousMove<<"\n";
+					return Action(i, previousMove);
+				}
+			}
+		}
+		// Don't shoot
 		return cDontShoot;
-		//This line would predict that bird 0 will move right and shoot at it
-		//return Action(0, MOVE_RIGHT);
 	}
 
 	std::vector<ESpecies> Player::guess(const GameState &pState, const Deadline &pDue)
 	{
-		/*
-		* Here you should write your clever algorithms to guess the species of each bird.
-		* This skeleton makes no guesses, better safe than sorry!
-		*/
 		srand(time(NULL));
 		cerr<<"=== ROUND n° "<< pState.getRound()<<" ===\n";
 		cerr<<"# birds = "<< pState.getNumBirds()<<"\n";
@@ -83,15 +89,21 @@ namespace ducks
 			int NoStates = this -> Player::NoStates;
 			// Create an HMM for the bird, with the observations and random initialisation of A, B and pi
 			HMM hmm(NoStates,10,observation);
-			// cerr<<"BIRD NO."<<i<<": \n";
-			// cerr<<observation.size()<<" ";
+			// Print observations
 			/*
-			for (int k = 0; k<observation.size(); k++)
+			if (pState.getRound() == 2)
 			{
-			cerr<<observation[i]<<" ";
+				cerr<<"BIRD NO."<<i<<": \n";
+				cerr<<observation.size()<<" ";
+			
+				for (int k = 0; k<observation.size(); k++)
+				{
+					cerr<<observation[k]<<" ";
+				}
+				cerr<<"\n";
 			}
-			cerr<<"\n";
 			*/
+			
 			
 			// GUESSING
 			int index;

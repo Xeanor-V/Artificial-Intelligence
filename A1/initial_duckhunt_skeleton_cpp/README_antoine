@@ -17,7 +17,7 @@ mkfifo player2server server2player
 ./Skeleton verbose server < player2server > server2player
 
 # Terminal 2:
-./Skeleton verbose > player2server < server2player
+./a.out verbose > player2server < server2player
 
 #Where "Skeleton" is the compiled skeleton program. 
 
