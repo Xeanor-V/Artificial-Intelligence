@@ -24,10 +24,11 @@ public:
 	int NoStatesG = 1; // For the guessing models
 	int NoStatesS = 5; // For the shooting models
 	int maxitersG = 500;
-	int maxitersS = 300;
+	int maxitersS = 100;
 	long double thresholdGuess = -1e1; // Threshold on guesses is useless
-	long double thresholdShoot = 1; // Only shoot when it is sufficiently probable
-	long double thresholdBS = 1e-85; // Threshold on the proba of BS from which we don't shoot anymore
+	long double thresholdShoot = 0.75; // Only shoot when it is sufficiently probable
+	long double thresholdBS = 1e-80; // Threshold on the proba of BS from which we don't shoot anymore
+	long double offset = 3;
 	VVI triedShots; // Don't try the same shot twice
 	//int startShoot = 110; // The dumb shooting method is actually bad
     /**
