@@ -12,10 +12,12 @@ namespace ducks
 
 	Action Player::shoot(const GameState &pState, const Deadline &pDue)
 	{
-		if (pState.getBird(0).getSeqLength() <= 1)
+		if (pState.getBird(0).getSeqLength() == 1)
 		{
 			cerr<<"=== ROUND n° "<< pState.getRound()<<" ===\n";
 			cerr<<"# birds = "<< pState.getNumBirds()<<"\n";
+			VVI dummy(pState.getNumBirds(),vector<int>(10,0));
+			this->triedShots = dummy;
 		}
 		/*
 		* From time step (100-numBirds) :
@@ -32,12 +34,14 @@ namespace ducks
 		shoot for the highest proba (but if only black_stork, return cDontShoot;)
 		*
 		* Remaining questions :
-		* 1st round : we are not able to guess for the black stork yet => shoot or don't shoot. I don't shoot
+		* 1st rounds : we are not able to guess for the black stork yet => shoot or don't shoot. I don't shoot. /!\ sometimes BS are really rare and one only appears at the middle of the game !
 		* Our guessing gets better and better with the rounds increasing => Shoot more at the last rounds
+		* Only shoot if the proba is > threshold
+		* If you miss a bird, don't try it anymore ?
 		*/
 		
 		// We don't do anything before the 100-numBirds last time steps
-		if (pState.getBird(0).getSeqLength() >= 100 - pState.getNumBirds()) // test if +- 1 needed
+		if (pState.getBird(0).getSeqLength() >= 100 - pState.getNumBirds())
 		{
 			int bestBirdIndex = -1;
 			int likelyObsStep = -1;
@@ -96,34 +100,24 @@ namespace ducks
 						if (this -> HMMAvg[5].second > 0)
 						{
 							probaBS = this -> HMMAvg[5].first.Prob_Emmision_Sequence(observation);
-							cerr<<"probaBS = "<<probaBS<<"\n";
+							//cerr<<"probaBS = "<<probaBS<<"\n";
 						}
 					}
-					//cerr<<"Hello\n";
-					if (probaBS < this-> thresholdBS)
+					if (probaBS < this-> thresholdBS) // If it is absolutely not probable that it is a BS
 					{
-						cerr<<"in if, index bird = "<<i<<"\n";
+						//cerr<<"in if, index bird = "<<i<<"\n";
 						// HMM4
 						int NoStatesS = this -> Player::NoStatesS;
 						// Create an HMM for the bird, with the observations and random initialisation of A, B and pi
 						HMM hmm(NoStatesS,10,observation);
 						// obs => HMM4 => model
 						hmm.Estimate_Model(this->maxitersS);
-						cerr<<"HMM4 ok\n";
-						
-
-						cerr<<"BIRD NO."<<i<<": \n";
-						cerr<<observation.size()<<" ";
-						for (int k = 0; k<observation.size(); k++)
-						{
-							cerr<<observation[k]<<" ";
-						}
-						cerr<<"\n";
+						//cerr<<"HMM4 ok\n";
 						
 						// HMM2
 						// model, obs => HMM2 => X_1:t
 						VI states = hmm.Backtracking(hmm.Estimate_Sequence_Of_States());
-						cerr<<"HMM2 ok\n";
+						//cerr<<"HMM2 ok\n";
 						
 						// P(X_t+1) = A(Xt,:)
 						int Xt = states[states.size() - 1];
@@ -153,7 +147,7 @@ namespace ducks
 						}
 						
 						// Compare it with the other birds
-						if (maxProba > maxProbaStep)
+						if (maxProba > maxProbaStep && triedShots[i][likelyObs] == 0)
 						{
 							bestBirdIndex = i;
 							likelyObsStep = likelyObs;
@@ -164,9 +158,10 @@ namespace ducks
 				}
 			}
 			// shoot for the highest proba
-			if (bestBirdIndex != -1) // Not only black storks
+			if (bestBirdIndex != -1 && maxProbaStep > this->thresholdShoot) // Not only black storks and you must be sufficiently sure
 			{
-				cerr<<"SHOOT on bird "<<bestBirdIndex<<" at move "<<likelyObsStep<<"\n";
+				cerr<<"SHOOT on bird "<<bestBirdIndex<<" at move "<<likelyObsStep<<" with proba "<<maxProbaStep<<"\n";
+				triedShots[bestBirdIndex][likelyObsStep] = 1; // We don't shoot twice on the same bird at the same place
 				return Action(bestBirdIndex, static_cast<EMovement>(likelyObsStep));
 			}
 		}

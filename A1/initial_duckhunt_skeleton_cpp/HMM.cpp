@@ -162,27 +162,23 @@ namespace ducks
     {
         // VLD delta = this->HMM::Element_Wise_Product(iniState, emiMat[obs[0]]);
 		VLD delta = iniState;
-		cerr<<"1 ok\n";
 		for (int i = 0; i < iniState.size(); i++)
 		{
 			delta[i] *= emiMat[i][obs[0]];
 		}
-		cerr<<"2 ok\n";
         vector< int > bestPossible;
         DeltaTable DeltaResults; 
         // Delta procedure (Forward algorithm)
         for (int i = 1; i < obs.size(); i++)
         {
-            cerr<<"3 ok\n";
 			vector< pair<long double,int> > res;
             for(int j = 0; j < tranMat.size(); j++)
             {
                 VLD aux;
-                long double maxi = -1e9;
-                for(int k = 0; k < tranMat[j].size(); j++)
+                //long double maxi = -1e9;
+                for(int k = 0; k < tranMat[j].size(); k++)
                 	aux.push_back(tranMat[k][j] * delta[k] * obs[i]) ; // or obs[j] ? non sense
                 res.push_back(this->HMM::Best_Index_Vector (aux) );
-				cerr<<"4 ok\n";
             }
             for(int j = 0 ; j < res.size(); j++)
 				delta[j] = res[j].first;
@@ -193,14 +189,22 @@ namespace ducks
     VI HMM::Backtracking(DeltaTable DeltaResults)
     {
         // Print_DeltaTable(DeltaResults);
+		//cerr<<"size deltaresults = "<<DeltaResults.size()<<", "<<DeltaResults[0].size()<<"\n";
+		//cerr<<"size tranMat = "<<tranMat.size()<<", "<<tranMat[0].size()<<"\n";
+
+		/*for(int i = 0 ; i < DeltaResults.size(); i++)
+        {
+            for(int j = 0 ; j < DeltaResults[i].size();j++)
+            	cerr<<"("<<DeltaResults[i][j].first<<", "<<DeltaResults[i][j].second<<") ";
+            cerr<<"\n";
+        }
+		cerr<<"\n";*/
 		// Backtracking
-		cerr<<"5 ok\n";
         double maxi = -1e9;
         int index = -1;
         // Finding the max of the last result
-        for(int i = 0; i < DeltaResults[0].size()+1; i++)
+        for(int i = 0; i < DeltaResults[0].size(); i++)
         {   
-            cerr<<"6 ok\n";
 			long double aux =  DeltaResults[DeltaResults.size() -1 ][i].first;
             if( aux > maxi)
             {
@@ -212,17 +216,12 @@ namespace ducks
         backtracking.push_back(index);
         index = DeltaResults[DeltaResults.size() -1 ][index].second;
         backtracking.push_back(index);
-		cerr<<"7 ok\n";
         // Going back in the results
         for(int i = DeltaResults.size() - 2; i>=0; i--)
         {
-            cerr<<"index = "<<index<<"\n";
 			backtracking.push_back(DeltaResults[i][index].second);
-			cerr<<"7bis ok\n";
             index = DeltaResults[i][index].second;
-			cerr<<"index = "<<index<<"\n";
         }
-		cerr<<"8 ok\n";
         return backtracking;
     }
     void HMM::Estimate_Model(int maxIters)
@@ -449,7 +448,7 @@ namespace ducks
         cerr<<'\n';
 		*/
     }
-	/*void Print_DeltaTable(DeltaTable tab)
+	void Print_DeltaTable(DeltaTable tab)
 	{
         for(int i = 0 ; i < tab.size(); i++)
         {
@@ -458,7 +457,7 @@ namespace ducks
             cerr<<"\n";
         }
 		cerr<<"\n";
-	}*/
+	}
     HMM HMM::Avg_HMM(vector<HMM> hmms, HMM previous, double weight)
     {
         VVLD avgTran = hmms[0].tranMat;

@@ -3,6 +3,7 @@ using namespace std;
 typedef vector< vector <long double> > VVLD;
 typedef vector< long double > VLD;
 typedef vector< int > VI;
+typedef vector< vector <int> > VVI;
 typedef vector< vector< pair<long double, int> > > DeltaTable;
 
 namespace ducks
@@ -26,7 +27,7 @@ namespace ducks
             void Estimate_Model(int maxIters);
             //Help methods
             void Print_HMM();
-			//void Print_DeltaTable(DeltaTable tab);
+			void Print_DeltaTable(DeltaTable tab);
             HMM Avg_HMM(vector<HMM> hmms, HMM previous, double weight);
             VVLD Matrix_Sum(VVLD A, VVLD B);
             VVLD Matrix_Division(VVLD A, double B);
