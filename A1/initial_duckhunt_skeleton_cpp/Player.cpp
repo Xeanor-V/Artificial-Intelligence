@@ -16,8 +16,12 @@ namespace ducks
 		{
 			cerr<<"=== ROUND n° "<< pState.getRound()<<" ===\n";
 			cerr<<"# birds = "<< pState.getNumBirds()<<"\n";
+			
 			VVI dummy(pState.getNumBirds(),vector<int>(10,0));
 			this->triedShots = dummy;
+			
+			VVI dummy2(pState.getNumBirds(),vector<int>(99,-1));
+			this->predictions = dummy2;
 		}
 		
 		//return cDontShoot;
@@ -46,9 +50,11 @@ namespace ducks
 		if (pState.getRound() == 6)
 			return cDontShoot;
 		
+		int t = pState.getBird(0).getSeqLength();
 		// We don't do anything before the 100-numBirds last time steps
-		if (pState.getBird(0).getSeqLength() >= 100 - pState.getNumBirds())
+		if (t >= 100 - pState.getNumBirds() - this->previousCheck)
 		{
+			int ipred = t - 100 + pState.getNumBirds() + this->previousCheck;
 			int bestBirdIndex = -1;
 			int likelyObsStep = -1;
 			long double maxProbaStep = -1;
@@ -109,7 +115,7 @@ namespace ducks
 							//cerr<<"probaBS = "<<probaBS<<"\n";
 						}
 					}
-					if (probaBS < this-> thresholdBS || pState.getRound() == 0) // If it is absolutely not probable that it is a BS or if we are at round 0
+					if (probaBS < this-> thresholdBS)// || pState.getRound() == 0) // If it is absolutely not probable that it is a BS or if we are at round 0
 					{
 						//cerr<<"in if, index bird = "<<i<<"\n";
 						// HMM4
@@ -148,23 +154,27 @@ namespace ducks
 							if (probaNextObs[j] > maxProba)
 							{
 								likelyObs = j;
-								maxProba = probaNextObs[j];
+								maxProba = probaNextObs[i];
 							}
 						}
-						
+						this->predictions[i][t] = likelyObs;
 						// Compare it with the other birds
-						if (maxProba > maxProbaStep && triedShots[i][likelyObs] == 0)
+						if (ipred >= 4 && maxProba > maxProbaStep && triedShots[i][likelyObs] == 0)
 						{
-							bestBirdIndex = i;
-							likelyObsStep = likelyObs;
-							maxProbaStep = maxProba;
-							
+							if ( this->predictions[i][t-1] == observation[t-1]
+							  && this->predictions[i][t-2] == observation[t-2]
+							  && this->predictions[i][t-3] == observation[t-3]) // the bird is predictable
+							{
+								bestBirdIndex = i;
+								likelyObsStep = likelyObs;
+								maxProbaStep = maxProba;
+							}
 						}
 					}
 				}
 			}
 			// shoot for the highest proba
-			if (bestBirdIndex != -1 && maxProbaStep > this->thresholdShoot) // Not only black storks and you must be sufficiently sure
+			if (ipred > 4 && bestBirdIndex != -1 && maxProbaStep > this->thresholdShoot) // Not only black storks and you must be sufficiently sure
 			{
 				cerr<<"SHOOT on bird "<<bestBirdIndex<<" at move "<<likelyObsStep<<" with proba "<<maxProbaStep<<"\n";
 				triedShots[bestBirdIndex][likelyObsStep] = 1; // We don't shoot twice on the same bird at the same place
