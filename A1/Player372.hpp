@@ -5,6 +5,7 @@
 #include "GameState.hpp"
 #include "Action.hpp"
 #include <vector>
+#include "HMM.hpp"
 
 namespace ducks
 {
@@ -17,7 +18,21 @@ public:
      * There is no data in the beginning, so not much should be done here.
      */
     Player();
-
+    vector <HMM> playerModels;
+    vector < pair<HMM,int> > HMMAvg;
+	// Parameters we can play with :
+	int NoStatesG = 1; // For the guessing models
+	int NoStatesS = 5; // For the shooting models
+	int maxitersG = 500;
+	int maxitersS = 50;
+	long double thresholdGuess = -1e1; // Threshold on guesses is useless
+	long double thresholdShoot = 0.85; // Only shoot when it is sufficiently probable
+	long double thresholdBS = 1e-60; // Threshold on the proba of BS from which we don't shoot anymore
+	long double previousCheck = 5;
+	VVI triedShots; // Don't try the same shot twice
+	VVI predictions;
+	int offsetStartShoot = 16;
+	int randomParam = 20; // Must be >= 6
     /**
      * Shoot!
      *
@@ -68,9 +83,6 @@ public:
      * @param pDue time before which we must have returned
      */
     void reveal(const GameState &pState, const std::vector<ESpecies> &pSpecies, const Deadline &pDue);
-
-private:
-    int NoStates = 5;
 };
 
 } /*namespace ducks*/
