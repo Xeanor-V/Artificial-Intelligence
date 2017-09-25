@@ -16,35 +16,8 @@ namespace ducks
 		{
 			cerr<<"=== ROUND n° "<< pState.getRound()<<" ===\n";
 			cerr<<"# birds = "<< pState.getNumBirds()<<"\n";
-			
-			VVI dummy(pState.getNumBirds(),vector<int>(10,0));
-			this->triedShots = dummy;
-			
-			VVI dummy2(pState.getNumBirds(),vector<int>(99,-1));
-			this->predictions = dummy2;
 		}
-		
-		//return cDontShoot;
-		/*
-		* From time step (100-numBirds) :
-		for each bird
-		* - Get previous emissions obs
-		* - Check which bird it is :
-		* 	- HMM1, like the guessing part
-		* - if (!black_stork)
-		* 	- obs => HMM4 => model
-		* 	- model, obs => HMM2 => X_1:t
-		*	- P(X_t+1) = A(Xt,:)
-		*	- P(O_t+1) = P(X_t+1)*B and take the maximum
-		*	- store it if higher proba than the other birds
-		shoot for the highest proba (but if only black_stork, return cDontShoot;)
-		*
-		* Remaining questions :
-		* 1st rounds : we are not able to guess for the black stork yet => shoot or don't shoot. I don't shoot. /!\ sometimes BS are really rare and one only appears at the middle of the game !
-		* Our guessing for the BS gets better and better with the rounds increasing => Shoot more at the last rounds
-		* Only shoot if the proba is > threshold => done
-		* If you miss a bird, don't try it anymore ? => done
-		*/
+
 		
 		// Kattis overfitting, there is a BS at round 6
 		if (pState.getRound() == 6)
@@ -52,12 +25,8 @@ namespace ducks
 		
 		int t = pState.getBird(0).getSeqLength();
 		// We don't do anything before the 100-numBirds last time steps
-		if (t >= 100 - pState.getNumBirds() - this->previousCheck)
+		if (t >= 100-pState.getNumBirds())
 		{
-			int ipred = t - 100 + pState.getNumBirds() + this->previousCheck;
-			int bestBirdIndex = -1;
-			int likelyObsStep = -1;
-			long double maxProbaStep = -1;
 			// Loop on the birds
 			for(int i = 0 ; i < pState.getNumBirds(); i++)
 			{
@@ -117,88 +86,70 @@ namespace ducks
 					}
 					if (probaBS < this-> thresholdBS)// || pState.getRound() == 0) // If it is absolutely not probable that it is a BS or if we are at round 0
 					{
-						//cerr<<"in if, index bird = "<<i<<"\n";
-						// HMM4
-						int NoStatesS = this -> Player::NoStatesS;
-						// Create an HMM for the bird, with the observations and random initialisation of A, B and pi
-						HMM hmm(NoStatesS,10,observation);
-						// obs => HMM4 => model
-						hmm.Estimate_Model(this->maxitersS);
-						//cerr<<"HMM4 ok\n";
-						
-						// HMM2
-						// model, obs => HMM2 => X_1:t
-						VI states = hmm.Backtracking(hmm.Estimate_Sequence_Of_States());
-						//cerr<<"HMM2 ok\n";
-						
-						// P(X_t+1) = A(Xt,:)
-						int Xt = states[states.size() - 1];
-						VLD probaNextState = hmm.tranMat[Xt];
-						
-						// P(O_t+1) = P(X_t+1)*B and take the maximum
-						VLD probaNextObs(10);
-						for (int j=0; j < 10; j++)
+						if (observation[observation.size()-1] == observation[observation.size() - 2]
+							&& observation[observation.size()-2] == observation[observation.size() - 3]
+								&& observation[observation.size()-3] == observation[observation.size() - 4]
+									)//&& observation[observation.size()-4] == observation[observation.size() - 5])
 						{
-							probaNextObs[j] = 0;
-							for (int k=0; k < NoStatesS; k++)
+							EMovement  aiming;
+							switch (observation[observation.size()-1])
 							{
-								probaNextObs[j] += probaNextState[k] * hmm.emiMat[k][j];
+								case 0:
+								//observation.push_back(0);
+								//return cDontShoot;
+								break;
+								case 1:
+								aiming = MOVE_UP_LEFT;
+								break;
+								case 2:
+								aiming = MOVE_UP;
+								break;
+								case 3:
+								aiming = MOVE_UP_RIGHT;
+								break;
+								case 4:
+								aiming = MOVE_LEFT;
+								break;
+								case 5:
+								aiming = MOVE_STOPPED;
+								break;
+								case 6:
+								aiming = MOVE_RIGHT;
+								break;
+								case 7:
+								aiming = MOVE_DOWN_LEFT;
+								break;
+								case 8:
+								aiming = MOVE_DOWN;
+								break;
+								case 9:
+								aiming = MOVE_DOWN_RIGHT;
+								break;
 							}
-						}
-						
-						// Take most probable obs for this bird
-						int likelyObs = -1;
-						long double maxProba = -1;
-						for (int j=0; j < 10; j++)
-						{
-							if (probaNextObs[j] > maxProba)
-							{
-								likelyObs = j;
-								maxProba = probaNextObs[i];
-							}
-						}
-						this->predictions[i][t] = likelyObs;
-						// Compare it with the other birds
-						if (ipred >= 4 && maxProba > maxProbaStep && triedShots[i][likelyObs] == 0)
-						{
-							if ( this->predictions[i][t-1] == observation[t-1]
-							  && this->predictions[i][t-2] == observation[t-2]
-							  && this->predictions[i][t-3] == observation[t-3]) // the bird is predictable
-							{
-								bestBirdIndex = i;
-								likelyObsStep = likelyObs;
-								maxProbaStep = maxProba;
-							}
+							cerr<<"SHOOT on bird "<<i<<" at move "<<aiming<<"\n";
+							return Action(i, aiming);
 						}
 					}
 				}
 			}
-			// shoot for the highest proba
-			if (ipred > 4 && bestBirdIndex != -1 && maxProbaStep > this->thresholdShoot) // Not only black storks and you must be sufficiently sure
-			{
-				cerr<<"SHOOT on bird "<<bestBirdIndex<<" at move "<<likelyObsStep<<" with proba "<<maxProbaStep<<"\n";
-				triedShots[bestBirdIndex][likelyObsStep] = 1; // We don't shoot twice on the same bird at the same place
-				return Action(bestBirdIndex, static_cast<EMovement>(likelyObsStep));
-			}
 		}
-		
 		
 		// A dumb shooting method that predicts that the bird does the same move as the previous one
 		// Actually it gives a worse result than just guessing, so it's useless
 		/*
 		if (pState.getBird(0).getSeqLength() >= this->startShoot)
 		{
-			for(int i = 0 ; i < pState.getNumBirds(); i++)
-			{
-				Bird bird = pState.getBird(i);
-				if (bird.isAlive())
-				{
-					// shoot
-					EMovement previousMove = bird.getLastObservation();
-					cerr<<"SHOOT on bird "<<i<<" at move "<<previousMove<<"\n";
-					return Action(i, previousMove);
-				}
-			}
+		for(int i = 0 ; i < pState.getNumBirds(); i++)
+		{
+		Bird bird = pState.getBird(i);
+		if (bird.isAlive())
+		{
+		// shoot
+		EMovement previousMove = bird.getLastObservation();
+		cerr<<"SHOOT on bird "<<i<<" at move "<<previousMove<<"\n";
+		return Action(i, previousMove);
+		}
+		}
 		}
 		*/
 		// Don't shoot
@@ -304,12 +255,12 @@ namespace ducks
 			{
 				// 1st round : No information => random guess
 				// NO BLACK STORK because there are rare
-				// double x = rand() % 6; // x in the range 0 to 5
-				// index = (int) x;
-				//if (index == 6)
-				//	index = 5;
-				// assert(index <= 5 && "ERROR : index > 5.\n");
-				index = 0; // Kattis overfitting
+				double x = rand() % this->randomParam; // x in the range 0 to 5
+				index = (int) x;
+				if (index >= 5)
+					index = 0;
+				//assert(index <= 5 && "ERROR : index > 5.\n");
+				//index = 0; // Kattis overfitting
 			}
 			switch(index)
 			{
