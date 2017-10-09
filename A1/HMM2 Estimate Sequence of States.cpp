@@ -36,7 +36,7 @@ void Print_Matrix( VVLD  mat)
     return;
 }
 
-//Print_vector it's a general method for printing vector
+// Print_vector it's a general method for printing vector
 // @Order determines if it's going to be printed forward(true) or backwards(false)
 template<typename Type>
 void Print_Vector( vector<Type> vec,bool order)
