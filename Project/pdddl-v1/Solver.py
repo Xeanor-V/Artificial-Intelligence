@@ -34,9 +34,9 @@ def possible_Paint(H,W,domprob):
     W+=1
     movex = 0
     movey = 1
-    movements_up = {}
-    movements_down = {}
-    action = "up"
+    painting_up = {}
+    painting_down = {}
+    action = "paint-up"
     indexes = list(reversed(list(range(H))))
     print(indexes) 
     for i in indexes:
@@ -45,11 +45,11 @@ def possible_Paint(H,W,domprob):
                 if(j+movex >= 0 and j+movex < W):
                     currentTile = "tile_" + str(i) +"-" + str(j)
                     targetTile = "tile_" + str(i + movey) +"-" + str(j + movex)
-                    movements_up[currentTile] = []
+                    painting_up[currentTile] = []
                     print(currentTile,targetTile)
                     for o in domprob.ground_operator(action):
                         if(action,targetTile,currentTile) in o.precondition_pos:
-                            movements_up[currentTile].append(o.precondition_pos)
+                            painting_up[currentTile].append(o.precondition_pos)
     action = "paint-down"
     movey = -1
     print("######")
@@ -59,12 +59,12 @@ def possible_Paint(H,W,domprob):
                 if(j+movex >= 0 and j+movex < W):
                     currentTile = "tile_" + str(i) +"-" + str(j)
                     targetTile = "tile_" + str(i + movey) +"-" + str(j + movex)
-                    movements_down[currentTile] = []
+                    painting_down[currentTile] = []
                     print(currentTile,targetTile)
                     for o in domprob.ground_operator(action):
                         if(action,targetTile,currentTile) in o.precondition_pos:
-                            movements_down[currentTile].append(o.precondition_pos)
-    return [movements_up,movements_down]
+                            painting_down[currentTile].append(o.precondition_pos)
+    return [painting_up,painting_down]
 
 
 
