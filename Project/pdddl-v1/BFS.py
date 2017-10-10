@@ -92,39 +92,53 @@ def getPossibles(robot,state,target):
     ## todo append SAT for painting
     s.append("change_paint")
 
-    ## todo stay in position
     s.append("still")
     ##return s
     return states,s
 
 
 
-### BFS algorithm to solve the proposed target
-## TODO add coments
+""" BFS algorithm to solve the problem
+    @robots - list of robots defined as [ [x,y], color, color1Remaining, color2Remaining]
+    @iniState - matrix that defines the initial configuration
+    @target - matrix that defines the target configuration
+"""
 def solve(robots, iniState, target):
+    ### using list as queue and dictionary as hashmap
     q = []
     visited = {}
+    ### initializing the queue for the BFS
+    ### the state it's represented as current state of robots
+    ### current state of the board
+    ### and the list of movements
     q.append( [robots,iniState,[]])
+    ### Using np arrays because of comparation function between matrices 
     targetCheck = np.array(target)
+    ### flag to check if we were able to achieve the target
     done = False;
-    index = 0;
     while q:
         current = q[0]
         q.pop(0)
         currentCheck = np.array(current[1])
-        if str(current[1]) in visited:
+        ### converting the state to string for hashing
+        KeyCurrent = str(current[1])
+        ### checking if we have been in this state before
+        if KeyCurrent in visited:
             continue
-
+        ### marking and hashing state
         visited[str(current[1])] = True
-        currentCheck[currentCheck == 3] = 0
 
+        ### Checking if our current board it's our target
+        currentCheck[currentCheck == 3] = 0
         if (currentCheck == targetCheck).all():
             print(currentCheck)
             print(current[2])
             done = True
             break;
-        robot1Possibles,movement1 = getPossibles(current[0][0]
-            ## TODO add coments,current[1],target)
+
+        ### TODO right now it's working for two robots, planning to do it for N robots
+        ### Get possibles for robot1 then try those as current States for robot2 and so on
+        robot1Possibles,movement1 = getPossibles(current[0][0],current[1],target)
         index1 = 0
         for possible1 in robot1Possibles:
             robot2Possibles,movement2 = getPossibles(current[0][1],possible1[1],target)
@@ -136,10 +150,9 @@ def solve(robots, iniState, target):
                 index2+=1
                 q.append( [ [possible1[0],possible2[0]], possible2[1], sequence])
             index1+=1
-
-
-
     return done
+
+
 
 robot1 = [ [1,1], 2, 10,10]
 robot2 = [ [0 ,0],1, 10,10]
@@ -155,10 +168,9 @@ robot2 = [ [0 ,0],1, 10,10]
 
 """
 
-##robot2 = 
 robots = [robot1,robot2]
-state = [[3,0,0], [0,3,0], [0,0,0]]
-target = [[1,2,0], [0,0,1], [1,2,0]]
+state = [[3,0,0,0], [0,3,0,0], [0,0,0,0]]
+target = [[1,2,0,0], [0,0,1,0], [1,2,0,2]]
 
 ##print(getPossibles(robot1,state,target))
 
