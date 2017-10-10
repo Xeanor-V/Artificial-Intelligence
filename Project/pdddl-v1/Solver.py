@@ -48,7 +48,7 @@ def possible_Paint(H,W,domprob):
                     painting_up[currentTile] = []
                     print(currentTile,targetTile)
                     for o in domprob.ground_operator(action):
-                        if(action,targetTile,currentTile) in o.precondition_pos:
+                        if('up',targetTile,currentTile) in o.precondition_pos:
                             painting_up[currentTile].append(o.precondition_pos)
     action = "paint-down"
     movey = -1
@@ -62,7 +62,7 @@ def possible_Paint(H,W,domprob):
                     painting_down[currentTile] = []
                     print(currentTile,targetTile)
                     for o in domprob.ground_operator(action):
-                        if(action,targetTile,currentTile) in o.precondition_pos:
+                        if('down',targetTile,currentTile) in o.precondition_pos:
                             painting_down[currentTile].append(o.precondition_pos)
     return [painting_up,painting_down]
 
