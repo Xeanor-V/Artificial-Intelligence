@@ -1,9 +1,14 @@
 import sys
 from  pddlpy import DomainProblem
 
-
+"""
+        given an action Possible_Movements find all the preconditions required to make
+        use of that action for each cell in the board.
+        TODO: Explain parameters 
+"""
 def possible_Movements(action,H,W,domprob):
     W+=1
+    ## each action requires a transformation in the X or Y axis
     movex = 0
     movey = 0
     if(action == "up"):
@@ -14,7 +19,10 @@ def possible_Movements(action,H,W,domprob):
         movex = -1
     else:
         movex = 1
+
+    ## Movements stores the precondtions for a given cell
     movements = {}
+    ## Due to pddl sintax some of the indexes of the tiles are reversed
     indexes = list(reversed(list(range(H))))
     print(indexes) 
     for i in indexes:
@@ -24,12 +32,15 @@ def possible_Movements(action,H,W,domprob):
                     currentTile = "tile_" + str(i) +"-" + str(j)
                     targetTile = "tile_" + str(i + movey) +"-" + str(j + movex)
                     movements[currentTile] = []
+                    ### find all the preconditions and then we filter them based on our current tile and our target tile
                     print(currentTile,targetTile)
                     for o in domprob.ground_operator(action):
                         if(action,targetTile,currentTile) in o.precondition_pos:
                             movements[currentTile].append(o.precondition_pos)
     return movements
 
+
+## 
 def possible_Paint(H,W,domprob):
     W+=1
     movex = 0
