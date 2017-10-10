@@ -9,6 +9,7 @@
  amount2 - white
 """
 from copy import copy, deepcopy
+import numpy as np
 
 def possible(robot, state, mov):
     dy = robot[0] + mov[0]
@@ -32,6 +33,7 @@ def getPossibles(robot,state,target):
 
     ## checking if the adjacent cell exists and if it's clear
     ## exists -> it's in the bounds of the board
+    ## for each possible movement we get the the new states also
     if((robot[0][1] + 1) < len(state) and state[ robot[0][1] + 1 ][ robot[0][0] ] == 0  ):
         s.add("down")
         aux = deepcopy(state)
@@ -81,21 +83,43 @@ def getPossibles(robot,state,target):
 
     ## todo add SAT for painting
     s.add("change_paint")
-    return s,states
+    ##return s
+    return states
 
 
 
 
-def solve(robot, iniState):
-    return
+def solve(robots, iniState, target):
+    q = []
+    q.append( [robots,iniState])
+    tArray = np.tArray(target)
+    done = False;
+    while q:
+        current = q[0]
+        q.pop(0)
+        if np.array(current[1]) == tArray.all():
+
+            done = True
+            break;
+        robot1Possibles = getPossibles(current[0][0],current[1],target)
+        for possible1 in robot1Possibles:
+            robot2Possibles = getPossibles(current[0][1],possible1[1],target)
+            for possible2 in robot2Possibles:
+                q.append( [ [possible1[0],possible2[0]], possible2[1]])
+
+
+    return done
 
 robot1 = [ [1,1], 2, 10,10]
+
 ##robot2 = 
 ##robots = [robot]
 state = [[0,0,0], [1,0,1], [0,0,0]]
 target = [[0,2,0], [1,0,1], [0,2,0]]
 
 print(getPossibles(robot1,state,target))
+
+print(solve())
     
         
 
