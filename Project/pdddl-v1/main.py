@@ -171,7 +171,6 @@ def solve(robots, iniState, target):
                 index2 += 1
                 q.append([[possible1[0], possible2[0]], possible2[1], sequence])
             index1 += 1
-    print(current)
     return done
 
 if __name__ == '__main__':
@@ -185,12 +184,12 @@ if __name__ == '__main__':
     robot1[0][0] -=1
     robot2[0][0] -=1
     robots = [robot1, robot2]
-    print(robots)
-    print(state)
-    print(target)
-    print(solve(robots, state, target))
+    ##print(robots)
+    ##print(state)
+    ##print(target)
+    solve(robots, state, target)
 
-    print()
+    print("Time: ")
     print(time.datetime.now() - a)
     """
 
