@@ -90,9 +90,10 @@ def getPossibles(robot,state,target):
         states.append( [removePaint(robot,d1,d2), aux])
 
     ## todo append SAT for painting
-    s.append("change_paint")
+    ##s.append("change_paint")
 
     s.append("still")
+    states.append( [robot, state])
     ##return s
     return states,s
 
@@ -131,6 +132,7 @@ def solve(robots, iniState, target):
         ### Checking if our current board it's our target
         currentCheck[currentCheck == 3] = 0
         if (currentCheck == targetCheck).all():
+            print(targetCheck)
             print(currentCheck)
             print(current[2])
             done = True
@@ -169,8 +171,14 @@ robot2 = [ [0 ,0],1, 10,10]
 """
 
 robots = [robot1,robot2]
-state = [[3,0,0,0], [0,3,0,0], [0,0,0,0]]
-target = [[1,2,0,0], [0,0,1,0], [1,2,0,2]]
+##state = [[3,0,0,0], [0,3,0,0], [0,0,0,0]]
+##target = [[1,1,1,1], [2,2,2,2], [0,0,0,0]]
+
+state = [[3,0,0], [0,3,0], [0,0,0], [0,0,0]]
+target = [[1,2,1],[2,1,2],[1,2,1],[0,0,0]]
+
+
+print(target)
 
 ##print(getPossibles(robot1,state,target))
 
