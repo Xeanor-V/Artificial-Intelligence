@@ -9,6 +9,7 @@
 """
 
 from copy import copy, deepcopy
+import datetime as time
 import numpy as np
 import parse as p
 
@@ -30,7 +31,7 @@ def removePaint(robot, d1, d2):
 
 
 def changePaint(robot, change):
-    return [robot[0], change, robot2[2], robot[3]]
+    return [robot[0], change, robot[2], robot[3]]
 
 
 def getPossibles(robot, state, target):
@@ -76,7 +77,7 @@ def getPossibles(robot, state, target):
         aux = deepcopy(state)
         aux[robot[0][1] - 1][robot[0][0]] = robot[1]
         d1 = d2 = 0
-        if (robot1[1] == 1):
+        if (robot[1] == 1):
             d1 = 1
         else:
             d2 = 1
@@ -87,7 +88,7 @@ def getPossibles(robot, state, target):
         aux = deepcopy(state)
         aux[robot[0][1] + 1][robot[0][0]] = robot[1]
         d1 = d2 = 0
-        if (robot1[1] == 1):
+        if (robot[1] == 1):
             d1 = 1
         else:
             d2 = 1
@@ -101,13 +102,14 @@ def getPossibles(robot, state, target):
         else:
             auxR = changePaint(robot,1)
             s.append("change_paint_white")
-        states.append([robot, state])
+        states.append([auxR, state])
 
 
     s.append("still")
     states.append( [robot, state])
-    ##return s
     return states, s
+    ##return s
+
 
 
 """ BFS algorithm to solve the problem
@@ -136,13 +138,16 @@ def solve(robots, iniState, target):
         q.pop(0)
         currentCheck = np.array(current[1])
         ### converting the state to string for hashing
-        keyCurrent = str(current[1])
+        keyState = str(current[1])
+        KeyRobots = str(current[0])
         ### checking if we have been in this state before
-        value = visited.get(keyCurrent)
-        if value != None:
+        value1 = visited.get(keyState)
+        value2 = visited.get(KeyRobots)
+        if value1!= None: ##value1 != None and value2 != None:
             continue
         ### marking and hashing state
-        visited[str(current[1])] = True
+        visited[keyState] = True
+        visited[KeyRobots] = True
 
         ### Checking if our current board it's our target
         currentCheck[currentCheck == 3] = 0
@@ -171,16 +176,43 @@ def solve(robots, iniState, target):
 
 if __name__ == '__main__':
 
-    """robot1, robot2, state, target = p.main()
+    a = time.datetime.now()
+    
+    
+    robot1, robot2, state, target = p.main()
     robot1[1]+=1
     robot2[1]+=1
     robot1[0][0] -=1
     robot2[0][0] -=1
     robots = [robot1, robot2]
+    print(robots)
+    print(state)
+    print(target)
+    print(solve(robots, state, target))
+
+    print()
+    print(time.datetime.now() - a)
     """
 
-    robot1 = [ [1,1], 2, 10,10]
-    robot2 = [ [0 ,0],1, 10,10]
+    robot1 = [[0, 3], 2, 1000, 1000]
+    robot2 = [[1, 2], 1, 1000, 1000]
+
+    robots = [robot1,robot2]
+    state = [[0, 0, 0], [0, 0, 0], [0, 3, 0], [3, 0, 0], [0, 0, 0]]
+    target = [[1, 2, 1], [2, 1, 2], [1, 2, 1], [2, 1, 2], [0, 0, 0]]
+    #state = [[3, 0, 0, 0], [0, 3, 0, 0], [0, 0, 0, 0]]
+    #target = [[1, 2, 0, 0], [0, 0, 1, 0], [1, 2, 0, 2]]
+    #robot1 = [[1, 1], 2, 10, 10]
+    #robot2 = [[0, 0], 1, 10, 10]
+    #robots = [robot1, robot2]
+    print("Robots: ")
+    print(robots)
+    print("State: ")
+    print(np.array(state))
+    print("Target: ")
+    print(np.array(target))
+    print(solve(robots, state, target))
+    ### """
 
     """
         0 2 0
@@ -190,17 +222,5 @@ if __name__ == '__main__':
         0 3 0
         0 0 0
     """
-    robots = [robot1,robot2]
-    state = [[3,0,0,0], [0,3,0,0], [0,0,0,0]]
-    target = [[1,1,1,1], [2,1,1,2], [0,0,0,0]]
-    #state = [[3, 0, 0, 0], [0, 3, 0, 0], [0, 0, 0, 0]]
-    #target = [[1, 2, 0, 0], [0, 0, 1, 0], [1, 2, 0, 2]]
-    #robot1 = [[1, 1], 2, 10, 10]
-    #robot2 = [[0, 0], 1, 10, 10]
-    #robots = [robot1, robot2]
-    print(robots)
-    print(state)
-    print(target)
-    print(solve(robots, state, target))
 
 
