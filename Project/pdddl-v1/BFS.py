@@ -10,6 +10,10 @@
 """
 from copy import copy, deepcopy
 import numpy as np
+import Interface as gui
+
+#Current as a global variable
+current = []
 
 def possible(robot, state, mov):
     dy = robot[0] + mov[0]
@@ -171,18 +175,18 @@ robot2 = [ [0 ,0],1, 10,10]
 """
 
 robots = [robot1,robot2]
-##state = [[3,0,0,0], [0,3,0,0], [0,0,0,0]]
-##target = [[1,1,1,1], [2,2,2,2], [0,0,0,0]]
-
 state = [[3,0,0], [0,3,0], [0,0,0], [0,0,0]]
 target = [[1,2,1],[2,1,2],[1,2,1],[0,0,0]]
 
+solution = solve(robots,state,target)
+if (solution ==  True):
+    
+    #There is path
+    print("Hello")
+    gui.Draw(robots,state,current[2])
+else:
+    print("There is no path available")
 
-print(target)
-
-##print(getPossibles(robot1,state,target))
-
-print(solve(robots,state,target))
     
         
 
